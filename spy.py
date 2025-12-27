@@ -30,7 +30,7 @@ def save_history(history_set):
 
 def get_recent_posts():
     L = instaloader.Instaloader()
-    # L.login("USER", "PASSWORD") # Private accounts ke liye login zaroori hai
+    # L.login("USER", "PASSWORD")
 
     print(f"[{datetime.now().strftime('%H:%M:%S')}] 🕵️  Checking Last {POSTS_TO_CHECK} Posts...")
     
@@ -38,28 +38,28 @@ def get_recent_posts():
     new_sent_posts = sent_posts.copy()
     
     for username in COMPETITORS:
-        print(f"   🔍 Analyzing: {username}...")
+        print(f"    Analyzing: {username}...")
         try:
             profile = instaloader.Profile.from_username(L.context, username)
             followers = profile.followers
             
-            # Counter initialize karo
+            #  initialize Counter
             count = 0
             
             for post in profile.get_posts():
                 # --- LOGIC TO STOP AFTER 5 POSTS ---
                 if count >= POSTS_TO_CHECK:
-                    print(f"   ✋ Checked latest {POSTS_TO_CHECK} posts. Moving to next user.")
+                    print(f"    Checked latest {POSTS_TO_CHECK} posts. Moving to next user.")
                     break
                 
-                count += 1 # Counter badhao
+                count += 1 
                 
-                # 1. Check agar ye post hum pehle bhej chuke hain
+               
                 if post.shortcode in sent_posts:
                     print(f"      • Post {post.shortcode} already sent. Skipping.")
                     continue
 
-                # 2. Agar nayi hai, to Engagement calculate karo
+                
                 likes = post.likes
                 comments = post.comments
                 engagement_rate = ((likes + comments) / followers) * 100 if followers > 0 else 0
@@ -77,16 +77,16 @@ def get_recent_posts():
                     "timestamp": str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 }
 
-                print(f"      🚀 Sending NEW post to n8n...")
+                print(f"       Sending NEW post to n8n...")
                 
                 if send_to_n8n(payload):
                     new_sent_posts.add(post.shortcode)
                 
         except Exception as e:
-            print(f"   ❌ Error checking {username}: {e}")
+            print(f"    Error checking {username}: {e}")
 
     save_history(new_sent_posts)
-    print("✅ All Done.")
+    print("All Done.")
 
 def send_to_n8n(data):
     try:
@@ -95,10 +95,10 @@ def send_to_n8n(data):
         if response.status_code == 200:
             return True
         else:
-            print(f"      ❌ n8n Error: {response.status_code}")
+            print(f"       n8n Error: {response.status_code}")
             return False
     except Exception as e:
-        print(f"      ❌ Connection Error: {e}")
+        print(f"       Connection Error: {e}")
         return False
 
 if __name__ == "__main__":
