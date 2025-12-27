@@ -1,0 +1,243 @@
+{
+  "name": "Product spy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "price-update",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -16
+      ],
+      "id": "d3aac15c-eed7-4ebb-b4a9-f35f80ada62c",
+      "name": "Webhook",
+      "webhookId": "013aa7f5-14c6-4cdc-aa0c-eef933b12683"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1c8O0-THBVu4__MxKmnSakKOTUOa2NEuvUTYDzS-k0qs",
+          "mode": "list",
+          "cachedResultName": "product spy",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c8O0-THBVu4__MxKmnSakKOTUOa2NEuvUTYDzS-k0qs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c8O0-THBVu4__MxKmnSakKOTUOa2NEuvUTYDzS-k0qs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product Name": "={{ $json.body.product_name }}",
+            "Price": "={{ $json.body.price }}",
+            "Date": "={{ $today }}",
+            "URL": "={{ $json.body.url }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Product Name",
+              "displayName": "Product Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -192,
+        -16
+      ],
+      "id": "5ace7fa0-a348-44dd-bcd2-a987f95bba85",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aZCCpOhBsQgxOd4L",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "098f3ec1-6279-4c9c-a6ff-ee30d42a597f",
+              "leftValue": "={{ $json.Price }}",
+              "rightValue": 999,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        48,
+        -16
+      ],
+      "id": "2c214f8d-f352-42ba-9ca4-9a887699247a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "jhonysons333@gmail.com",
+        "subject": "=Price Drop Alert! Aura Watch is Rs. {{ $json.Price }}",
+        "message": "=Check it out quickly!Product: {{ $json['Product Name'] }} New Price: {{ $json.Price }} Link: {{ $json.URL }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        -112
+      ],
+      "id": "e3b9afc5-eeea-40d9-aae8-b073a4277c44",
+      "name": "Send a message",
+      "webhookId": "e005290c-43a9-4543-9a9b-a2ea59e4a805",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Nu2hdMKhpins3TCP",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "jhonysons333@gmail.com",
+        "subject": "Price Not Change.",
+        "message": "=product:  {{ $('Append or update row in sheet').item.json['Product Name'] }} Price: {{ $('Append or update row in sheet').item.json.Price }} Not Change Yet",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        80
+      ],
+      "id": "08d01d0e-74a4-4426-ba4e-b8258cc43ca1",
+      "name": "Send a message1",
+      "webhookId": "47c12c65-2c4e-42d3-8d82-73f720e4f148",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Nu2hdMKhpins3TCP",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "bc11bcbf-a1b3-4377-997a-79cbad626f1c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "931546e19f94a92fa1d02ca85ea6073065c719664b36f5917182a8b3d7983638"
+  },
+  "id": "Wc8YrRuDQziAkZrm",
+  "tags": []
+}
