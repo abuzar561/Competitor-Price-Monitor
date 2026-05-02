@@ -1,5 +1,5 @@
 {
-  "name": "Product spy",
+  "name": "Competitor Price Monitor",
   "nodes": [
     {
       "parameters": {
@@ -14,48 +14,36 @@
         -16
       ],
       "id": "d3aac15c-eed7-4ebb-b4a9-f35f80ada62c",
-      "name": "Webhook",
-      "webhookId": "013aa7f5-14c6-4cdc-aa0c-eef933b12683"
+      "name": "Price Update Webhook"
     },
     {
       "parameters": {
         "operation": "appendOrUpdate",
         "documentId": {
           "__rl": true,
-          "value": "1c8O0-THBVu4__MxKmnSakKOTUOa2NEuvUTYDzS-k0qs",
-          "mode": "list",
-          "cachedResultName": "product spy",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c8O0-THBVu4__MxKmnSakKOTUOa2NEuvUTYDzS-k0qs/edit?usp=drivesdk"
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
         },
         "sheetName": {
           "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c8O0-THBVu4__MxKmnSakKOTUOa2NEuvUTYDzS-k0qs/edit#gid=0"
+          "value": "Price Monitor",
+          "mode": "name"
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
             "Product Name": "={{ $json.body.product_name }}",
             "Price": "={{ $json.body.price }}",
-            "Date": "={{ $today }}",
+            "Target Price": "={{ $json.body.target_price }}",
+            "Alert Type": "={{ $json.body.alert_type }}",
+            "Currency": "={{ $json.body.currency }}",
+            "Timestamp": "={{ $json.body.timestamp || $now }}",
             "URL": "={{ $json.body.url }}"
           },
           "matchingColumns": [
-            "Date"
+            "URL"
           ],
           "schema": [
-            {
-              "id": "Date",
-              "displayName": "Date",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
             {
               "id": "Product Name",
               "displayName": "Product Name",
@@ -71,6 +59,42 @@
               "required": false,
               "defaultMatch": false,
               "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Target Price",
+              "displayName": "Target Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Alert Type",
+              "displayName": "Alert Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
               "type": "string",
               "canBeUsedToMatch": true
             },
@@ -78,14 +102,13 @@
               "id": "URL",
               "displayName": "URL",
               "required": false,
-              "defaultMatch": false,
+              "defaultMatch": true,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
+              "canBeUsedToMatch": true
             }
           ],
-          "attemptToConvertTypes": false,
+          "attemptToConvertTypes": true,
           "convertFieldsToString": false
         },
         "options": {}
@@ -97,13 +120,7 @@
         -16
       ],
       "id": "5ace7fa0-a348-44dd-bcd2-a987f95bba85",
-      "name": "Append or update row in sheet",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "aZCCpOhBsQgxOd4L",
-          "name": "Google Sheets account"
-        }
-      }
+      "name": "Log Price Snapshot"
     },
     {
       "parameters": {
@@ -117,8 +134,8 @@
           "conditions": [
             {
               "id": "098f3ec1-6279-4c9c-a6ff-ee30d42a597f",
-              "leftValue": "={{ $json.Price }}",
-              "rightValue": 999,
+              "leftValue": "={{ Number($json.Price) }}",
+              "rightValue": "={{ Number($json['Target Price'] || 999) }}",
               "operator": {
                 "type": "number",
                 "operation": "lt"
@@ -136,13 +153,13 @@
         -16
       ],
       "id": "2c214f8d-f352-42ba-9ca4-9a887699247a",
-      "name": "If"
+      "name": "Price Below Target?"
     },
     {
       "parameters": {
-        "sendTo": "jhonysons333@gmail.com",
-        "subject": "=Price Drop Alert! Aura Watch is Rs. {{ $json.Price }}",
-        "message": "=Check it out quickly!Product: {{ $json['Product Name'] }} New Price: {{ $json.Price }} Link: {{ $json.URL }}",
+        "sendTo": "price-alerts@example.com",
+        "subject": "=Price drop: {{ $json['Product Name'] }} is {{ $json.Currency }} {{ $json.Price }}",
+        "message": "=Product: {{ $json['Product Name'] }}\nCurrent price: {{ $json.Currency }} {{ $json.Price }}\nTarget price: {{ $json.Currency }} {{ $json['Target Price'] }}\nURL: {{ $json.URL }}\nChecked at: {{ $json.Timestamp }}",
         "options": {}
       },
       "type": "n8n-nodes-base.gmail",
@@ -152,20 +169,13 @@
         -112
       ],
       "id": "e3b9afc5-eeea-40d9-aae8-b073a4277c44",
-      "name": "Send a message",
-      "webhookId": "e005290c-43a9-4543-9a9b-a2ea59e4a805",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "Nu2hdMKhpins3TCP",
-          "name": "Gmail account"
-        }
-      }
+      "name": "Send Price Drop Alert"
     },
     {
       "parameters": {
-        "sendTo": "jhonysons333@gmail.com",
-        "subject": "Price Not Change.",
-        "message": "=product:  {{ $('Append or update row in sheet').item.json['Product Name'] }} Price: {{ $('Append or update row in sheet').item.json.Price }} Not Change Yet",
+        "sendTo": "price-alerts@example.com",
+        "subject": "=Price check: {{ $json['Product Name'] }} is {{ $json.Currency }} {{ $json.Price }}",
+        "message": "=No drop below target yet.\nProduct: {{ $json['Product Name'] }}\nCurrent price: {{ $json.Currency }} {{ $json.Price }}\nTarget price: {{ $json.Currency }} {{ $json['Target Price'] }}\nURL: {{ $json.URL }}\nChecked at: {{ $json.Timestamp }}",
         "options": {}
       },
       "type": "n8n-nodes-base.gmail",
@@ -175,52 +185,45 @@
         80
       ],
       "id": "08d01d0e-74a4-4426-ba4e-b8258cc43ca1",
-      "name": "Send a message1",
-      "webhookId": "47c12c65-2c4e-42d3-8d82-73f720e4f148",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "Nu2hdMKhpins3TCP",
-          "name": "Gmail account"
-        }
-      }
+      "name": "Send Status Email"
     }
   ],
   "pinData": {},
   "connections": {
-    "Webhook": {
+    "Price Update Webhook": {
       "main": [
         [
           {
-            "node": "Append or update row in sheet",
+            "node": "Log Price Snapshot",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Append or update row in sheet": {
+    "Log Price Snapshot": {
       "main": [
         [
           {
-            "node": "If",
+            "node": "Price Below Target?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If": {
+    "Price Below Target?": {
       "main": [
         [
           {
-            "node": "Send a message",
+            "node": "Send Price Drop Alert",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Send a message1",
+            "node": "Send Status Email",
             "type": "main",
             "index": 0
           }
@@ -233,11 +236,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "bc11bcbf-a1b3-4377-997a-79cbad626f1c",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "931546e19f94a92fa1d02ca85ea6073065c719664b36f5917182a8b3d7983638"
-  },
-  "id": "Wc8YrRuDQziAkZrm",
-  "tags": []
+    "templateCredsSetupCompleted": false
+  }
 }

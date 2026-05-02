@@ -1,0 +1,9 @@
+{
+  "product_name": "Competitor Product",
+  "price": 899,
+  "currency": "PKR",
+  "url": "https://example.com/product",
+  "target_price": 999,
+  "alert_type": "price_drop",
+  "timestamp": "2026-05-02T08:00:00+00:00"
+}
